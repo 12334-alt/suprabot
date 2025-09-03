@@ -139,6 +139,10 @@ opening_books:
         - gm
         - noob
         - Titans
+    chess960:
+      selection: best_move
+      names:
+        - chess960
     
 
 online_moves:
