@@ -14,10 +14,10 @@ jobs:
   build:
     concurrency:
       group: bot-run
-      cancel-in-progress: false  # Keep this false for fastest restarts
+      cancel-in-progress: false
 
     runs-on: ubuntu-latest
-    timeout-minutes: 355  # Just under 6-hour GitHub limit
+    timeout-minutes: 355
 
     steps:
       - name: Checkout repo
@@ -38,6 +38,11 @@ jobs:
       - name: Inject Secret Token
         run: sed -i "s/TokenTimeIsBackBuddyss/${{ secrets.LICHESS_KEY }}/g" config.yml
 
+      - name: Configure Paris Tunnel Proxy
+        run: |
+          echo "Routing Lichess API traffic through Paris tunnel..."
+          sed -i "s|https://lichess.org/api|https://your-paris-proxy.example.com/lichess/api|g" config.yml
+
       - name: Make Stockfish Executable
         run: | 
              chmod +x ./engines/stockfish-ubuntu-x86-64-bmi2
@@ -49,10 +54,7 @@ jobs:
           echo "Starting bot..."
           python3 -u user_interface.py "tournament" &
           PID=$!
-          
-          # Auto-exit after 350 minutes (so restart runs without overlap)
           ( sleep 20700 && echo "Time up. Killing bot..." && kill -SIGTERM $PID ) &
-          
           wait $PID
           echo "Bot ended cleanly."
 
@@ -61,7 +63,3 @@ jobs:
         run: gh workflow run bot.yml
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-
-
